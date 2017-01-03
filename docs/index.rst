@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-matrigram's documentation!
-==========================
+matrigram's documentation
+=========================
 
 The bridge between *matrix* and *telegram*
 
@@ -13,6 +13,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   quickstart
    code
 
 

@@ -3,19 +3,19 @@ Matrigram code
 
 Helper
 ^^^^^^
-.. automodule:: helper
+.. automodule:: matrigram.helper
    :members:
 
 Main
 ^^^^
-.. automodule:: matrigram_main
+.. automodule:: matrigram.matrigram_main
 .. autoclass:: Matrigram
    :members:
    :undoc-members:
 
 Matrix Client
 ^^^^^^^^^^^^^
-.. automodule:: mc
+.. automodule:: matrigram.mc
 .. autoclass:: MC
    :members:
    :undoc-members:
