@@ -318,8 +318,8 @@ class Matrigram(telepot.Bot):
         client.send_video(path)
 
     # gifs are mp4 in telegram
-    @focused
     @logged_in
+    @focused
     def forward_gif_to_mc(self, msg):
         from_id = msg['from']['id']
 
