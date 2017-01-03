@@ -1,0 +1,4 @@
+{
+  "telegram_token": "my_telegram_token_here",
+  "server": "http://localhost:8008"
+}

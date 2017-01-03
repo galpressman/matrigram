@@ -1,0 +1,6 @@
+login - Login using username and password
+logout - Logout of current user
+join - Join room given room name
+leave - Leave room (interactive)
+get_rooms - Get a list of rooms you are participating in
+discover - Discover public rooms
