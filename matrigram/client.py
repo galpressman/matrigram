@@ -184,6 +184,10 @@ class MatrigramClient(object):
             logger.error('error creating room')
             return None, None
 
+    def backfill_previous_messages(self, limit=10):
+        room_obj = self.get_room_obj(self.focus_room_id)
+        room_obj.backfill_previous_messages(limit=limit)
+
     def get_rooms_aliases(self):
         # returns a dict with id: room obj
         rooms = self._get_rooms_updated()
