@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-matrigram's documentation
-=========================
+matrigram
+=========
 
-The bridge between *matrix* and *telegram*
+The bridge between `matrix <https://www.matrix.org>`_ and `telegram <https://www.telegram.org>`_.
 
 Contents:
 
