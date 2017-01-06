@@ -269,7 +269,11 @@ class MatrigramBot(telepot.Bot):
 
         self.sendChatAction(chat_id, 'typing')
         client = self._get_client(chat_id)
+
         client.set_focus_room(room_name)
+        self.sendMessage(chat_id, '{} Room history:'.format(room_name))
+        client.backfill_previous_messages()
+
         self.answerCallbackQuery(query_id, 'Done!')
         self.sendMessage(chat_id, 'You are now participating in {}'.format(room_name))
 
