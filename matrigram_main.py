@@ -8,7 +8,7 @@ from matrigram.bot import MatrigramBot
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s'
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s '
                         '%(module)s@%(funcName)s +%(lineno)d: %(message)s',
                         datefmt='%H:%M:%S')
     logging.getLogger('requests').setLevel(logging.WARNING)
