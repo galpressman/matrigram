@@ -12,9 +12,6 @@ Bot commands
   Join to the given room.
 - ``/leave``
 
-  Interactive leave. This command will pop up your room list, prompting your for the room you want to leave.
-- ``/get_rooms``
-
   Get a list of the rooms you have joined.
 - ``/discover_rooms``
 

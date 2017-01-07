@@ -58,7 +58,6 @@ class MatrigramBot(telepot.Bot):
             (r'^/logout$', self.logout),
             (r'^/join\s(?P<room_name>[^$]+)$', self.join_room),
             (r'^/leave$', self.leave_room),
-            (r'^/get_rooms$', self.get_rooms),
             (r'^/discover$', self.discover_rooms),
             (r'^/focus$', self.change_focus_room),
             (r'^/status$', self.status),
@@ -236,15 +235,6 @@ class MatrigramBot(telepot.Bot):
         Focused room: {}
         Joined rooms: {}'''.format(focus_room, helper.list_to_nice_str(joined_rooms_list))
         self.sendMessage(from_id, message)
-
-    @logged_in
-    def get_rooms(self, msg, _):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
-
-        rooms = client.get_rooms_aliases()
-        to_send = [room[0] for _, room in rooms.iteritems()]
-        self.sendMessage(from_id, to_send)
 
     @logged_in
     def discover_rooms(self, msg, _):
