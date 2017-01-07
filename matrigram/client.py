@@ -13,7 +13,7 @@ from .helper import download_file
 from .helper import pprint_json
 
 
-class MC(object):
+class MatrigramClient(object):
     def __init__(self, server, tb, username):
         self.client = MatrixClient(server)
         self.tb = tb

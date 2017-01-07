@@ -6,16 +6,16 @@ Helper
 .. automodule:: matrigram.helper
    :members:
 
-Main
-^^^^
-.. automodule:: matrigram.matrigram_main
-.. autoclass:: Matrigram
+Bot
+^^^
+.. automodule:: matrigram.bot
+.. autoclass:: MatrigramBot
    :members:
    :undoc-members:
 
-Matrix Client
-^^^^^^^^^^^^^
-.. automodule:: matrigram.mc
-.. autoclass:: MC
+Client
+^^^^^^
+.. automodule:: matrigram.client
+.. autoclass:: MatrixClient
    :members:
    :undoc-members:

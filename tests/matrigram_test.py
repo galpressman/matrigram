@@ -1,14 +1,15 @@
-import matrigram.matrigram_main
-import multiprocessing
+import subprocess
+import shlex
+import time
 
 
 class TestMatrigram(object):
     def test_one(self):
-        p = multiprocessing.Process(target=matrigram.matrigram_main.main)
-        p.start()
+        cmd = 'python matrigram_main.py'
+        p = subprocess.Popen(shlex.split(cmd))
 
-        p.join(5)
+        time.sleep(5)
 
-        assert p.is_alive(), "matrigram did not boot"
+        assert not p.poll(), "matrigram did not boot"
         p.terminate()
-        p.join()
+        p.wait()
