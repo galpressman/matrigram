@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
 import os
 import re
-import tempfile
 import time
 from threading import Lock
 from threading import Thread
@@ -15,7 +13,7 @@ import telepot
 from . import helper
 from .helper import download_file
 from .helper import pprint_json
-from .mc import MC
+from .client import MatrigramClient
 
 BOT_BASE_URL = 'https://api.telegram.org/bot{token}/{path}'
 BOT_FILE_URL = 'https://api.telegram.org/file/bot{token}/{file_path}'
@@ -49,11 +47,11 @@ def focused(func):
     return func_wrapper
 
 
-class Matrigram(telepot.Bot):
+class MatrigramBot(telepot.Bot):
     def __init__(self, *args, **kwargs):
         config = kwargs.pop('config')
 
-        super(Matrigram, self).__init__(*args, **kwargs)
+        super(MatrigramBot, self).__init__(*args, **kwargs)
 
         routes = [
             (r'^/login (?P<username>\S+) (?P<password>\S+)$', self.login),
@@ -127,7 +125,7 @@ class Matrigram(telepot.Bot):
         logging.info('telegram user %s, login to %s', from_id, username)
         self.sendChatAction(from_id, 'typing')
 
-        client = MC(self.config['server'], self, username)
+        client = MatrigramClient(self.config['server'], self, username)
         login_bool, login_message = client.login(username, password)
         if login_bool:
             self.sendMessage(from_id, 'Logged in as {}'.format(username))
@@ -463,27 +461,3 @@ class Matrigram(telepot.Bot):
 
         logging.error('client without user?')
         return None
-
-
-def main():
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s'
-                        '%(module)s@%(funcName)s +%(lineno)d: %(message)s',
-                        datefmt='%H:%M:%S')
-    logging.getLogger('requests').setLevel(logging.WARNING)
-    logging.getLogger('urllib3').setLevel(logging.WARNING)
-
-    parser = argparse.ArgumentParser(description=helper.HELP_MSG)
-    parser.add_argument('--config', default='config.json', help='path to config file')
-    args = parser.parse_args()
-
-    config = helper.get_config(args.config)
-    media_dir = os.path.join(tempfile.gettempdir(), "matrigram")
-    if not os.path.exists(media_dir):
-        logging.debug('creating dir %s', media_dir)
-        os.mkdir(media_dir)
-
-    config['media_dir'] = media_dir
-    token = config['telegram_token']
-
-    mg = Matrigram(token, config=config)
-    mg.message_loop(run_forever='-I- matrigram running...')
