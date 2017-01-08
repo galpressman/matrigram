@@ -133,7 +133,14 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'github_user': 'GalPressman',
+    'github_repo': 'matrigram',
+    'github_banner': True,
+    'github_button': True,
+    'travis_button': True,
+    'show_powered_by': False,
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -187,6 +194,7 @@ html_sidebars = {
         'about.html',
         'navigation.html',
         'searchbox.html',
+        'badges.html',
     ]
 }
 
