@@ -16,6 +16,6 @@ Bot
 Client
 ^^^^^^
 .. automodule:: matrigram.client
-.. autoclass:: MatrixClient
+.. autoclass:: MatrigramClient
    :members:
    :undoc-members:
