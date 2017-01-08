@@ -8,11 +8,17 @@ from matrigram.bot import MatrigramBot
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s '
-                        '%(module)s@%(funcName)s +%(lineno)d: %(message)s',
-                        datefmt='%H:%M:%S')
-    logging.getLogger('requests').setLevel(logging.WARNING)
-    logging.getLogger('urllib3').setLevel(logging.WARNING)
+    logger = logging.getLogger('matrigram')
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s '
+                                      '%(module)s@%(funcName)s +%(lineno)d: %(message)s',
+                                  datefmt='%H:%M:%S')
+    sh = logging.StreamHandler()
+    fh = logging.FileHandler('matrigram.log')
+    sh.setFormatter(formatter)
+    fh.setFormatter(formatter)
+    logger.addHandler(sh)
+    logger.addHandler(fh)
 
     parser = argparse.ArgumentParser(description=helper.HELP_MSG)
     parser.add_argument('--config', default='config.json', help='path to config file')
