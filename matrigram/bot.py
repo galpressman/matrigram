@@ -174,7 +174,7 @@ class MatrigramBot(telepot.Bot):
         from_id = msg['from']['id']
         client = self._get_client(from_id)
 
-        rooms = [room[0] for _, room in client.get_rooms_aliases().iteritems()]
+        rooms = [room[0] for dummy_room_id, room in client.get_rooms_aliases().iteritems()]
         if not rooms:
             self.sendMessage(from_id, 'Nothing to leave...')
             return
@@ -199,7 +199,7 @@ class MatrigramBot(telepot.Bot):
         from_id = msg['from']['id']
         client = self._get_client(from_id)
 
-        rooms = [room[0] for _, room in client.get_rooms_aliases().iteritems()]
+        rooms = [room[0] for dummy_room_id, room in client.get_rooms_aliases().iteritems()]
         if not rooms or len(rooms) == 0:
             self.sendMessage(from_id, 'You need to be at least in one room to use this command.')
             return
@@ -229,7 +229,7 @@ class MatrigramBot(telepot.Bot):
 
         focus_room = client.get_focus_room_alias()
         joined_rooms = client.get_rooms_aliases()
-        joined_rooms_list = [val[0] for _, val in joined_rooms.items()]
+        joined_rooms_list = [val[0] for dummy_room_id, val in joined_rooms.items()]
 
         message = '''Status:
         Focused room: {}
