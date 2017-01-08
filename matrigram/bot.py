@@ -89,11 +89,26 @@ class MatrigramBot(telepot.Bot):
         self.users_lock = Lock()  # self.users lock for typing related matters
 
     def on_chat_message(self, msg):
+        """Main entry point.
+
+        This function is our main entry point to the bot.
+        Messages will be routed according to their content type.
+
+        Args:
+            msg: The message object received from telegram user.
+        """
         content_type, _, _ = telepot.glance(msg)
         logger.debug('content type: %s', content_type)
         self.content_type_routes[content_type](msg)
 
     def on_callback_query(self, msg):
+        """Handle callback queries.
+
+        Route queries using ``self.callback_query_routes``.
+
+        Args:
+            msg: The message object received from telegram user.
+        """
         data = msg['data']
 
         for route, callback in self.callback_query_routes:
@@ -104,6 +119,13 @@ class MatrigramBot(telepot.Bot):
                 break
 
     def on_text_message(self, msg):
+        """Handle text messages.
+
+        Route text messages using ``self.routes``.
+
+        Args:
+            msg: The message object received from telegram user.
+        """
         text = msg['text'].encode('utf-8')
 
         for route, callback in self.routes:
@@ -118,6 +140,12 @@ class MatrigramBot(telepot.Bot):
                 break
 
     def login(self, msg, match):
+        """Perform login.
+
+        Args:
+            msg: The message object received from telegram user.
+            match: Match object containing extracted data.
+        """
         username = match.group('username')
         password = match.group('password')
         from_id = msg['from']['id']
@@ -151,6 +179,11 @@ class MatrigramBot(telepot.Bot):
 
     @logged_in
     def logout(self, msg, _):
+        """Perform logout.
+
+        Args:
+            msg: The message object received from telegram user.
+        """
         from_id = msg['from']['id']
         client = self._get_client(from_id)
 
@@ -325,6 +358,16 @@ class MatrigramBot(telepot.Bot):
         client.send_video(path)
 
     def send_message(self, sender, msg, client):
+        """Send message to telegram user.
+
+        Args:
+            sender (str): Name of the sender.
+            msg (str): Text message.
+            client (MatrigramClient): The client the message is originated in.
+
+        Returns:
+
+        """
         from_id = self._get_from_id(client)
         if not from_id:
             return
@@ -440,12 +483,28 @@ class MatrigramBot(telepot.Bot):
             self.users[from_id]['typing_thread'] = None
 
     def _get_client(self, from_id):
+        """Get matrigram client.
+
+        Args:
+            from_id: Telegram user id.
+
+        Returns:
+            MatrigramClient: The client associated to the telegram user with `from_id`.
+        """
         try:
             return self.users[from_id]['client']
         except KeyError:
             return None
 
     def _get_from_id(self, client):
+        """Get telegram id associated with client.
+
+        Args:
+            client (MatrigramClient): The client to be queried.
+
+        Returns:
+            str: The `from_id` associated to the client.
+        """
         for from_id, user in self.users.items():
             if user['client'] == client:
                 return from_id
