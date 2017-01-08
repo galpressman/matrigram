@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
+# This test assumes you have $TG_TOKEN evironment variable defined
 
 set -e
 set -x
 
 CONFIG_FILE="config.json"
-TOKEN="314662038:AAGyo7vcZpS89xoe59gd075MEioBRHEc5wQ"
 
 cp -f config.json.example $CONFIG_FILE
-sed -i -- "s/my_telegram_token_here/""${TOKEN}""/g" $CONFIG_FILE
+set +x
+sed -i -- "s/my_telegram_token_here/""${TG_TOKEN}""/g" $CONFIG_FILE
