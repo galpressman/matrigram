@@ -12,6 +12,8 @@ from requests import ConnectionError
 from .helper import download_file
 from .helper import pprint_json
 
+logger = logging.getLogger('matrigram')
+
 
 class MatrigramClient(object):
     def __init__(self, server, tb, username):
@@ -30,7 +32,7 @@ class MatrigramClient(object):
     def login(self, username, password):
         try:
             self.token = self.client.login_with_password(username, password)
-            logging.info('token = %s', self.token)
+            logger.info('token = %s', self.token)
             rooms = self.get_rooms_aliases()
             if rooms:
                 # set focus room to "first" room
@@ -45,10 +47,10 @@ class MatrigramClient(object):
 
     def logout(self):
         res = self.client.logout()
-        logging.debug('logout status code %s', res.status_code)
+        logger.debug('logout status code %s', res.status_code)
 
     def on_event(self, _, event):
-        logging.debug('entered with message %s', pprint_json(event))
+        logger.debug('entered with message %s', pprint_json(event))
         sender = event['sender'].split(':')[0].encode('utf-8')
 
         # Prevent messages loopback
@@ -72,7 +74,7 @@ class MatrigramClient(object):
             self.tb.send_topic(sender, topic, self)
 
     def on_ephemeral_event(self, _, ee):
-        logging.debug(pprint_json(ee))
+        logger.debug(pprint_json(ee))
 
         if ee['type'] == 'm.typing':
             if ee['content']['user_ids']:
@@ -92,11 +94,11 @@ class MatrigramClient(object):
     def leave_room(self, room_id_or_alias):
         room = self.get_room_obj(room_id_or_alias)
         if not room:
-            logging.error('cant find room')
+            logger.error('cant find room')
             return False
         if self.focus_room_id == room.room_id:
             self.set_focus_room(None)
-            logging.debug('no room on focus')
+            logger.debug('no room on focus')
         return room.leave()
 
     def set_focus_room(self, room_id_or_alias):
@@ -110,13 +112,13 @@ class MatrigramClient(object):
             for listener in room_obj.listeners:
                 if listener['callback'] == self.on_event:
                     room_obj.listeners.remove(listener)
-                    logging.debug('removed listener from room %s',
-                                  self._room_id_to_alias(self.focus_room_id))
+                    logger.debug('removed listener from room %s',
+                                 self._room_id_to_alias(self.focus_room_id))
             for ephemeral_listener in room_obj.ephemeral_listeners:
                 if ephemeral_listener['callback'] == self.on_ephemeral_event:
                     room_obj.ephemeral_listeners.remove(ephemeral_listener)
-                    logging.debug('removed ephemeral listener from room %s',
-                                  self._room_id_to_alias(self.focus_room_id))
+                    logger.debug('removed ephemeral listener from room %s',
+                                 self._room_id_to_alias(self.focus_room_id))
             self.focus_room_id = None
 
         # set new room on focus
@@ -126,7 +128,7 @@ class MatrigramClient(object):
             room_obj.add_listener(self.on_event)
             room_obj.add_ephemeral_listener(self.on_ephemeral_event)
 
-        logging.debug("set focus room to %s", self.focus_room_id)
+        logger.debug("set focus room to %s", self.focus_room_id)
 
     def get_focus_room_alias(self):
         return self._room_id_to_alias(self.focus_room_id)
@@ -140,7 +142,7 @@ class MatrigramClient(object):
         if not rooms:
             return rooms
 
-        logging.debug("rooms got from server are %s", rooms)
+        logger.debug("rooms got from server are %s", rooms)
 
         # return dict with id: list of aliases or id (if no alias exists)
         return {key: val.aliases if val.aliases else [key] for (key, val) in rooms.items()}
@@ -163,7 +165,7 @@ class MatrigramClient(object):
         room_obj = self.get_room_obj(self.focus_room_id)
 
         if not room_obj:
-            logging.error('cant find room')
+            logger.error('cant find room')
         else:
             room_obj.send_text(msg)
 
@@ -174,7 +176,7 @@ class MatrigramClient(object):
             room_obj = self.get_room_obj(self.focus_room_id)
 
             if not room_obj:
-                logging.error('cant find room')
+                logger.error('cant find room')
             else:
                 room_obj.send_image(mxcurl, os.path.split(path)[1])
 
@@ -231,7 +233,7 @@ class MatrigramClient(object):
         if id is None:
             return None
         if id.startswith('#'):
-            logging.warning('nothing to convert, alias is already given..')
+            logger.warning('nothing to convert, alias is already given..')
             return id
         rooms = self.get_rooms_aliases()
         if id in rooms:
@@ -252,7 +254,7 @@ class MatrigramClient(object):
             return None
 
         if not alias.startswith('#'):
-            logging.warning('nothing to convert, id is already given..')
+            logger.warning('nothing to convert, id is already given..')
             return alias
 
         return self.client.api.get_room_id(alias)

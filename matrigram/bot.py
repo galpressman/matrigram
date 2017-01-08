@@ -17,6 +17,7 @@ from .client import MatrigramClient
 
 BOT_BASE_URL = 'https://api.telegram.org/bot{token}/{path}'
 BOT_FILE_URL = 'https://api.telegram.org/file/bot{token}/{file_path}'
+logger = logging.getLogger('matrigram')
 
 
 def logged_in(func):
@@ -89,7 +90,7 @@ class MatrigramBot(telepot.Bot):
 
     def on_chat_message(self, msg):
         content_type, _, _ = telepot.glance(msg)
-        logging.debug('content type: %s', content_type)
+        logger.debug('content type: %s', content_type)
         self.content_type_routes[content_type](msg)
 
     def on_callback_query(self, msg):
@@ -121,7 +122,7 @@ class MatrigramBot(telepot.Bot):
         password = match.group('password')
         from_id = msg['from']['id']
 
-        logging.info('telegram user %s, login to %s', from_id, username)
+        logger.info('telegram user %s, login to %s', from_id, username)
         self.sendChatAction(from_id, 'typing')
 
         client = MatrigramClient(self.config['server'], self, username)
@@ -136,7 +137,7 @@ class MatrigramBot(telepot.Bot):
             }
 
             rooms = client.get_rooms_aliases()
-            logging.debug("rooms are: %s", rooms)
+            logger.debug("rooms are: %s", rooms)
 
             if rooms:
                 room_aliases = '\n'.join([room_alias[0] for room_alias in rooms.values()])
@@ -144,7 +145,7 @@ class MatrigramBot(telepot.Bot):
                 self.sendMessage(from_id,
                                  'You are now participating in: {}'.format(
                                      client.get_focus_room_alias()))
-            logging.debug('%s user state:\n%s', from_id, self.users[from_id])
+            logger.debug('%s user state:\n%s', from_id, self.users[from_id])
         else:
             self.sendMessage(from_id, login_message)
 
@@ -153,7 +154,7 @@ class MatrigramBot(telepot.Bot):
         from_id = msg['from']['id']
         client = self._get_client(from_id)
 
-        logging.info('logout %s', from_id)
+        logger.info('logout %s', from_id)
 
         client.logout()
         self.users[from_id]['client'] = None
@@ -259,7 +260,7 @@ class MatrigramBot(telepot.Bot):
         from_id = msg['from']['id']
         client = self._get_client(from_id)
 
-        logging.debug(pprint_json(msg))
+        logger.debug(pprint_json(msg))
         file_id = msg['photo'][-1]['file_id']
         file_obj = self.getFile(file_id)
         file_path = file_obj['file_path']
@@ -377,7 +378,7 @@ class MatrigramBot(telepot.Bot):
         requests.post(base_url, params=payload, files=files)
 
     def send_photo(self, path, client):
-        logging.info('path = %s', path)
+        logger.info('path = %s', path)
         from_id = self._get_from_id(client)
         if not from_id:
             return
@@ -387,7 +388,7 @@ class MatrigramBot(telepot.Bot):
         # self.sendPhoto(from_id, open(path, 'rb'))
 
     def send_voice(self, path, client):
-        logging.info('path = %s', path)
+        logger.info('path = %s', path)
         from_id = self._get_from_id(client)
         if not from_id:
             return
@@ -396,7 +397,7 @@ class MatrigramBot(telepot.Bot):
         self._workaround_sendAudio(path, from_id)
 
     def send_video(self, path, client):
-        logging.info('path = %s', path)
+        logger.info('path = %s', path)
         from_id = self._get_from_id(client)
         if not from_id:
             return
@@ -449,5 +450,5 @@ class MatrigramBot(telepot.Bot):
             if user['client'] == client:
                 return from_id
 
-        logging.error('client without user?')
+        logger.error('client without user?')
         return None
