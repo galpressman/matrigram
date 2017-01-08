@@ -14,5 +14,7 @@ install:
 # command to run tests
 script:
   - flake8 --max-line-length=100 matrigram matrigram_main.py
-  - pylint --disable=redefined-builtin,ungrouped-imports,too-many-public-methods,fixme,missing-docstring,invalid-name,protected-access matrigram matrigram_main.py
+  - pylint --errors-only matrigram matrigram_main.py
   - py.test
+after_script:
+  - pylint --disable=redefined-builtin,ungrouped-imports,too-many-public-methods,fixme,missing-docstring,invalid-name,protected-access matrigram matrigram_main.py
