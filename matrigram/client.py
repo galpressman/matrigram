@@ -136,6 +136,13 @@ class MatrigramClient(object):
     def have_focus_room(self):
         return self.focus_room_id is not None
 
+    def get_members(self):
+        # workaround until sdk pull request is merged
+        res = self.client.api._send("GET", "/rooms/{}/members".format(self.focus_room_id),
+                                    api_path='/_matrix/client/r0')
+        return [event["content"]["displayname"].encode('utf-8') for event in res["chunk"] if
+                event["content"].get("displayname") and event["content"]["membership"] == "join"]
+
     def get_rooms_aliases(self):
         # returns a dict with id: room obj
         rooms = self._get_rooms_updated()

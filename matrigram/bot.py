@@ -62,6 +62,7 @@ class MatrigramBot(telepot.Bot):
             (r'^/discover$', self.discover_rooms),
             (r'^/focus$', self.change_focus_room),
             (r'^/status$', self.status),
+            (r'^/members$', self.get_members),
             (r'^(?P<text>[^/].*)$', self.forward_message_to_mc),
         ]
 
@@ -269,6 +270,16 @@ class MatrigramBot(telepot.Bot):
         Focused room: {}
         Joined rooms: {}'''.format(focus_room, helper.list_to_nice_str(joined_rooms_list))
         self.sendMessage(from_id, message)
+
+    @logged_in
+    @focused
+    def get_members(self, msg, _):
+        from_id = msg['from']['id']
+        client = self._get_client(from_id)
+
+        l = client.get_members()
+        # TODO: we need to think how we avoid too long messages, for now send 10 elements
+        self.sendMessage(from_id, helper.list_to_nice_str(l[0:10]))
 
     @logged_in
     def discover_rooms(self, msg, _):
