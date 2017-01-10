@@ -1,5 +1,6 @@
 import argparse
 import logging
+import logging.handlers
 import os
 import tempfile
 
@@ -14,7 +15,7 @@ def main():
                                       '%(module)s@%(funcName)s +%(lineno)d: %(message)s',
                                   datefmt='%H:%M:%S')
     sh = logging.StreamHandler()
-    fh = logging.FileHandler('matrigram.log')
+    fh = logging.handlers.RotatingFileHandler('matrigram.log', maxBytes=10000, backupCount=1)
     sh.setFormatter(formatter)
     fh.setFormatter(formatter)
     logger.addHandler(sh)
