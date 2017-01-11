@@ -46,8 +46,7 @@ class MatrigramClient(object):
             return False, "Server is offline"
 
     def logout(self):
-        res = self.client.logout()
-        logger.debug('logout status code %s', res.status_code)
+        self.client.logout()
 
     def on_event(self, _, event):
         logger.debug('entered with message %s', pprint_json(event))
