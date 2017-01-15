@@ -154,6 +154,17 @@ class MatrigramClient(object):
         return [event["content"]["displayname"].encode('utf-8') for event in res["chunk"] if
                 event["content"].get("displayname") and event["content"]["membership"] == "join"]
 
+    def create_room(self, alias, is_public=False, invitees=()):
+        try:
+            room_obj = self.client.create_room(alias, is_public, invitees)
+            room_obj.update_aliases()
+            logger.debug('room_id %s', room_obj.room_id)
+            logger.debug('room_alias %s', room_obj.aliases[0])
+            return (room_obj.room_id, room_obj.aliases[0])
+        except MatrixRequestError:
+            logger.error('error creating room')
+            return None, None
+
     def get_rooms_aliases(self):
         # returns a dict with id: room obj
         rooms = self._get_rooms_updated()

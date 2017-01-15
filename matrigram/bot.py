@@ -63,6 +63,7 @@ class MatrigramBot(telepot.Bot):
             (r'^/focus$', self.change_focus_room),
             (r'^/status$', self.status),
             (r'^/members$', self.get_members),
+            (r'^/create_room (?P<room_name>[\S]+)(?P<invitees>\s.*\S)*$', self.create_room),
             (r'^(?P<text>[^/].*)$', self.forward_message_to_mc),
         ]
 
@@ -297,6 +298,24 @@ class MatrigramBot(telepot.Bot):
 
         rooms = client.discover_rooms()
         self.sendMessage(from_id, rooms)
+
+    @logged_in
+    def create_room(self, msg, match):
+        from_id = msg['from']['id']
+        client = self._get_client(from_id)
+        room_alias = match.group('room_name')
+        invitees = match.group('invitees')
+
+        invitees = invitees.split() if invitees else None
+        room_id, actual_alias = client.create_room(room_alias, is_public=True, invitees=invitees)
+        if room_id:
+            self.sendMessage(from_id,
+                             'Created room {} with room id {}'.format(actual_alias, room_id))
+            self.sendMessage(from_id,
+                             'Invitees for the rooms are {}'.format(
+                                 helper.list_to_nice_str(invitees)))
+        else:
+            self.sendMessage(from_id, 'Could not create room')
 
     @logged_in
     @focused
