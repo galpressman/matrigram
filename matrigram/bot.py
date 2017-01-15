@@ -227,6 +227,7 @@ class MatrigramBot(telepot.Bot):
         client = self._get_client(from_id)
         prev_focus_room = client.get_focus_room_alias()
         client.leave_room(room_name)
+        self.sendMessage(from_id, 'Left {}'.format(room_name))
         curr_focus_room = client.get_focus_room_alias()
         if curr_focus_room != prev_focus_room and curr_focus_room is not None:
             self.sendMessage(from_id,
