@@ -262,7 +262,6 @@ class MatrigramClient(object):
         if id is None:
             return None
         if id.startswith('#'):
-            logger.warning('nothing to convert, alias is already given..')
             return id
         rooms = self.get_rooms_aliases()
         if id in rooms:
@@ -283,7 +282,6 @@ class MatrigramClient(object):
             return None
 
         if not alias.startswith('#'):
-            logger.warning('nothing to convert, id is already given..')
             return alias
 
         return self.client.api.get_room_id(alias)
