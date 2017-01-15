@@ -83,10 +83,10 @@ class MatrigramClient(object):
             else:
                 self.tb.stop_typing_thread(self)
 
-    def on_leave_event(self, room_id, ee):
-        logger.debug(pprint_json(ee))
+    def on_leave_event(self, room_id, le):
+        logger.debug(pprint_json(le))
 
-        if ee['timeline']['events'][0]['sender'] != ee['timeline']['events'][0]['state_key']:
+        if le['timeline']['events'][0]['sender'] != le['timeline']['events'][0]['state_key']:
             self.tb.send_kick(self._room_id_to_alias(room_id), self)
 
     def on_invite_event(self, _, ie):
