@@ -96,16 +96,13 @@ class MatrigramClient(object):
             return False
 
         if self.focus_room_id == room.room_id:
-            new_focus_room = None
             rooms = self.get_rooms_aliases()
-            if rooms:
-                leave_room_id = self._room_alias_to_id(room_id_or_alias)
-                # set another room in focus
-                for room_id in rooms.keys():
-                    if room_id != leave_room_id:
-                        new_focus_room = room_id
-                        break
+            room_id = self._room_alias_to_id(room_id_or_alias)
+
+            del rooms[room_id]
+            new_focus_room = rooms.keys()[0] if rooms else None
             self.set_focus_room(new_focus_room)
+
         return room.leave()
 
     def set_focus_room(self, room_id_or_alias):
