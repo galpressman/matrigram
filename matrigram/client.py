@@ -38,6 +38,7 @@ class MatrigramClient(object):
                 # set focus room to "first" room
                 self.set_focus_room(rooms.keys()[0])
 
+            self.client.add_invite_listener(self.on_invite_event)
             self.client.add_leave_listener(self.on_leave_event)
             self.client.start_listener_thread()
             return True, "OK"
@@ -87,6 +88,16 @@ class MatrigramClient(object):
 
         if ee['timeline']['events'][0]['sender'] != ee['timeline']['events'][0]['state_key']:
             self.tb.send_kick(self._room_id_to_alias(room_id), self)
+
+    def on_invite_event(self, _, ie):
+        logger.debug('invite event %s', pprint_json(ie))
+        room_name = None
+        for event in ie['events']:
+            if event['type'] == 'm.room.name':
+                room_name = event['content']['name']
+
+        if room_name:
+            self.tb.send_invite(self, self._room_id_to_alias(room_name))
 
     def join_room(self, room_id_or_alias):
         try:

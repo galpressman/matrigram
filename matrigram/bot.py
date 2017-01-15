@@ -70,6 +70,8 @@ class MatrigramBot(telepot.Bot):
         callback_query_routes = [
             (r'^LEAVE (?P<room>\S+)$', self.do_leave),
             (r'^FOCUS (?P<room>\S+)$', self.do_change_focus),
+            (r'^JOIN (?P<room>\S+)$', self.do_join),
+            (r'^NOP$', self.do_nop),
         ]
 
         self.routes = [(re.compile(pattern), callback) for pattern, callback in routes]
@@ -267,6 +269,27 @@ class MatrigramBot(telepot.Bot):
         self.sendMessage(from_id, 'You are now participating in {}'.format(room_name))
 
     @logged_in
+    def do_join(self, msg, match):
+        query_id, from_id, _ = telepot.glance(msg, flavor='callback_query')
+        room_name = match.group('room')
+
+        self.sendChatAction(from_id, 'typing')
+        client = self._get_client(from_id)
+
+        ret = client.join_room(room_name)
+        if not ret:
+            self.answerCallbackQuery(query_id, 'Can\'t join room')
+        else:
+            self.answerCallbackQuery(query_id, 'Joined {}'.format(room_name))
+
+    @logged_in
+    def do_nop(self, msg, _):
+        query_id, from_id, _ = telepot.glance(msg, flavor='callback_query')
+
+        self.sendChatAction(from_id, 'typing')
+        self.answerCallbackQuery(query_id, 'OK Boss!')
+
+    @logged_in
     def status(self, msg, _):
         from_id = msg['from']['id']
         self.sendChatAction(from_id, 'typing')
@@ -430,6 +453,30 @@ class MatrigramBot(telepot.Bot):
 
         self.sendMessage(from_id, 'You got kicked from {}'.format(room))
         client.set_focus_room(None)
+
+    def send_invite(self, client, room):
+        logger.info('join room %s?', room)
+        from_id = self._get_from_id(client)
+        if not from_id:
+            return
+
+        keyboard = {
+            'inline_keyboard': [
+                [
+                    {
+                        'text': 'Yes',
+                        'callback_data': 'JOIN {}'.format(room),
+                    },
+                    {
+                        'text': 'No',
+                        'callback_data': 'NOP',
+                    }
+                ]
+            ]
+        }
+
+        self.sendMessage(from_id, 'You have been invited to room {}, accept?'.format(room),
+                         reply_markup=keyboard)
 
     # temporary fixes are permanent, lets do it the hard way
     def _workaround_sendPhoto(self, path, from_id):
