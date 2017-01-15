@@ -4,15 +4,15 @@
 A bridge between *[matrix](https://www.matrix.org)* and *[telegram](https://www.telegram.org)*.
 
 ###Installation
-Install all dependencies using:
-```
-pip install -r requirements.txt
+Install dependencies using:
+```bash
+$ pip install -r requirements.txt
 ```
 
 ###Usage
 First fill `config.json` with your details.
 
-Run using `matrigram.py`, which will enter an infinite listening loop:
+Run using `matrigram_main.py`, which will enter an infinite listening loop:
 ```python
 mg.message_loop(run_forever='-I- matrigram running...')
 ```
