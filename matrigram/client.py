@@ -84,8 +84,7 @@ class MatrigramClient(object):
     def join_room(self, room_id_or_alias):
         try:
             self.client.join_room(room_id_or_alias)
-            if self.focus_room_id is None:
-                self.set_focus_room(room_id_or_alias)
+            self.set_focus_room(room_id_or_alias)
             return True
         except MatrixRequestError:
             return False
