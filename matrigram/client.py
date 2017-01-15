@@ -95,9 +95,18 @@ class MatrigramClient(object):
         if not room:
             logger.error('cant find room')
             return False
+
         if self.focus_room_id == room.room_id:
-            self.set_focus_room(None)
-            logger.debug('no room on focus')
+            new_focus_room = None
+            rooms = self.get_rooms_aliases()
+            if rooms:
+                leave_room_id = self._room_alias_to_id(room_id_or_alias)
+                # set another room in focus
+                for room_id in rooms.keys():
+                    if room_id != leave_room_id:
+                        new_focus_room = room_id
+                        break
+            self.set_focus_room(new_focus_room)
         return room.leave()
 
     def set_focus_room(self, room_id_or_alias):
