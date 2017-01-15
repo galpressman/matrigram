@@ -1,5 +1,8 @@
-login - Login using username and password
-logout - Logout of current user
-join - Join room given room name
-leave - Leave room (interactive)
-discover - Discover public rooms
+login - /login <username> <password>
+logout - /logout
+join - /join <room_name>
+leave - /leave
+discover - /discover_rooms
+focus - /focus
+status - /status
+create_room - /create_room <room_alias> [invitees]
