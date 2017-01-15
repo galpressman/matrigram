@@ -38,6 +38,7 @@ class MatrigramClient(object):
                 # set focus room to "first" room
                 self.set_focus_room(rooms.keys()[0])
 
+            self.client.add_leave_listener(self.on_leave_event)
             self.client.start_listener_thread()
             return True, "OK"
         except MatrixRequestError:
@@ -80,6 +81,12 @@ class MatrigramClient(object):
                 self.tb.start_typing_thread(self)
             else:
                 self.tb.stop_typing_thread(self)
+
+    def on_leave_event(self, room_id, ee):
+        logger.debug(pprint_json(ee))
+
+        if ee['timeline']['events'][0]['sender'] != ee['timeline']['events'][0]['state_key']:
+            self.tb.send_kick(self._room_id_to_alias(room_id), self)
 
     def join_room(self, room_id_or_alias):
         try:

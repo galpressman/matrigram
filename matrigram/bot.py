@@ -403,6 +403,15 @@ class MatrigramBot(telepot.Bot):
         self.sendChatAction(from_id, 'typing')
         self.sendMessage(from_id, "{} changed topic to: \"{}\"".format(sender, topic))
 
+    def send_kick(self, room, client):
+        logger.info('got kicked from %s', room)
+        from_id = self._get_from_id(client)
+        if not from_id:
+            return
+
+        self.sendMessage(from_id, 'You got kicked from {}'.format(room))
+        client.set_focus_room(None)
+
     # temporary fixes are permanent, lets do it the hard way
     def _workaround_sendPhoto(self, path, from_id):
         payload = {
