@@ -589,6 +589,7 @@ class MatrigramBot(telepot.Bot):
         try:
             return self.users[from_id]['client']
         except KeyError:
+            logger.error('from_id doesnt exist?')
             return None
 
     def _get_from_id(self, client):
