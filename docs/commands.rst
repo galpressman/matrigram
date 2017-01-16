@@ -21,6 +21,9 @@ Bot commands
 - ``/focus``
 
   Interactive command. Prompt the user for the room he wants to "focus" right now.
+- ``/setname <new_name>``
+
+  Sets matrix display name.
 - ``/status``
 
   Return general information regarding the user status.
