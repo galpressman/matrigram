@@ -3,6 +3,7 @@
 import logging
 import mimetypes
 import os
+import re
 
 import requests
 from matrix_client.client import MatrixClient
@@ -164,6 +165,13 @@ class MatrigramClient(object):
                                     api_path='/_matrix/client/r0')
         return [event["content"]["displayname"].encode('utf-8') for event in res["chunk"] if
                 event["content"].get("displayname") and event["content"]["membership"] == "join"]
+
+    def set_name(self, name):
+        # maybe we should generate an event to catch the correct server address from the answer
+        server = re.sub(r'https?://', '', self.server)
+        user_id = '@{}:{}'.format(self.username, server)
+        user = self.client.get_user(user_id)
+        user.set_display_name(name)
 
     def create_room(self, alias, is_public=False, invitees=()):
         try:
