@@ -345,6 +345,10 @@ class MatrigramBot(telepot.Bot):
     def forward_message_to_mc(self, msg, match):
         text = match.group('text')
         chat_id = msg['chat']['id']
+        from_user = msg['from'].get('username')
+
+        if from_user and chat_id < 0:
+            text = '{}: {}'.format(from_user, text)
         client = self._get_client(chat_id)
 
         client.send_message(text)
