@@ -22,10 +22,10 @@ logger = logging.getLogger('matrigram')
 
 def logged_in(func):
     def func_wrapper(self, msg, *args):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
         if client is None:
-            self.sendMessage(from_id,
+            self.sendMessage(chat_id,
                              'You are not logged in. Login to start with /login username password')
             return
         func(self, msg, *args)
@@ -35,13 +35,13 @@ def logged_in(func):
 
 def focused(func):
     def func_wrapper(self, msg, *args):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
         if not client.get_rooms_aliases():
-            self.sendMessage(from_id, 'You are not in any room. Type /join #room to join one.')
+            self.sendMessage(chat_id, 'You are not in any room. Type /join #room to join one.')
             return
         if not client.have_focus_room():
-            self.sendMessage(from_id, 'You don\'t have a room in focus. Type /focus to choose one.')
+            self.sendMessage(chat_id, 'You don\'t have a room in focus. Type /focus to choose one.')
             return
         func(self, msg, *args)
 
@@ -152,17 +152,17 @@ class MatrigramBot(telepot.Bot):
         """
         username = match.group('username')
         password = match.group('password')
-        from_id = msg['from']['id']
+        chat_id = msg['chat']['id']
 
-        logger.info('telegram user %s, login to %s', from_id, username)
-        self.sendChatAction(from_id, 'typing')
+        logger.info('telegram user %s, login to %s', chat_id, username)
+        self.sendChatAction(chat_id, 'typing')
 
         client = MatrigramClient(self.config['server'], self, username)
         login_bool, login_message = client.login(username, password)
         if login_bool:
-            self.sendMessage(from_id, 'Logged in as {}'.format(username))
+            self.sendMessage(chat_id, 'Logged in as {}'.format(username))
 
-            self.users[from_id] = {
+            self.users[chat_id] = {
                 'client': client,
                 'typing_thread': None,
                 'should_type': False,
@@ -173,13 +173,13 @@ class MatrigramBot(telepot.Bot):
 
             if rooms:
                 room_aliases = '\n'.join([room_alias[0] for room_alias in rooms.values()])
-                self.sendMessage(from_id, 'You are currently in rooms:\n{}'.format(room_aliases))
-                self.sendMessage(from_id,
+                self.sendMessage(chat_id, 'You are currently in rooms:\n{}'.format(room_aliases))
+                self.sendMessage(chat_id,
                                  'You are now participating in: {}'.format(
                                      client.get_focus_room_alias()))
-            logger.debug('%s user state:\n%s', from_id, self.users[from_id])
+            logger.debug('%s user state:\n%s', chat_id, self.users[chat_id])
         else:
-            self.sendMessage(from_id, login_message)
+            self.sendMessage(chat_id, login_message)
 
     @logged_in
     def logout(self, msg, _):
@@ -188,54 +188,54 @@ class MatrigramBot(telepot.Bot):
         Args:
             msg: The message object received from telegram user.
         """
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
 
-        logger.info('logout %s', from_id)
+        logger.info('logout %s', chat_id)
 
         client.logout()
-        self.users[from_id]['client'] = None
+        self.users[chat_id]['client'] = None
 
     @logged_in
     def join_room(self, msg, match):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
         room_name = match.group('room_name')
         ret = client.join_room(room_name)
         if not ret:
-            self.sendMessage(from_id, 'Can\'t join room')
+            self.sendMessage(chat_id, 'Can\'t join room')
         else:
-            self.sendMessage(from_id, "Joined {}".format(room_name))
+            self.sendMessage(chat_id, "Joined {}".format(room_name))
 
     @logged_in
     def leave_room(self, msg, _):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
 
         rooms = [room[0] for dummy_room_id, room in client.get_rooms_aliases().items()]
         if not rooms:
-            self.sendMessage(from_id, 'Nothing to leave...')
+            self.sendMessage(chat_id, 'Nothing to leave...')
             return
 
         keyboard = {
             'inline_keyboard': [[{'text': room,
                                   'callback_data': 'LEAVE {}'.format(room)} for room in rooms]]
         }
-        self.sendMessage(from_id, 'Choose a room to leave:', reply_markup=keyboard)
+        self.sendMessage(chat_id, 'Choose a room to leave:', reply_markup=keyboard)
 
-    @logged_in
     def do_leave(self, msg, match):
-        query_id, from_id, _ = telepot.glance(msg, flavor='callback_query')
+        query_id, _, _ = telepot.glance(msg, flavor='callback_query')
+        chat_id = msg['message']['chat']['id']
         room_name = match.group('room')
-        client = self._get_client(from_id)
+        client = self._get_client(chat_id)
 
         prev_focus_room = client.get_focus_room_alias()
         client.leave_room(room_name)
-        self.sendMessage(from_id, 'Left {}'.format(room_name))
+        self.sendMessage(chat_id, 'Left {}'.format(room_name))
         curr_focus_room = client.get_focus_room_alias()
 
         if curr_focus_room != prev_focus_room and curr_focus_room is not None:
-            self.sendMessage(from_id,
+            self.sendMessage(chat_id,
                              'You are now participating in: {}'.format(
                                  client.get_focus_room_alias()))
 
@@ -243,38 +243,38 @@ class MatrigramBot(telepot.Bot):
 
     @logged_in
     def change_focus_room(self, msg, _):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
 
         rooms = [room[0] for dummy_room_id, room in client.get_rooms_aliases().items()]
         if not rooms or len(rooms) == 0:
-            self.sendMessage(from_id, 'You need to be at least in one room to use this command.')
+            self.sendMessage(chat_id, 'You need to be at least in one room to use this command.')
             return
 
         keyboard = {
             'inline_keyboard': [[{'text': room,
                                   'callback_data': 'FOCUS {}'.format(room)} for room in rooms]]
         }
-        self.sendMessage(from_id, 'Choose a room to focus:', reply_markup=keyboard)
+        self.sendMessage(chat_id, 'Choose a room to focus:', reply_markup=keyboard)
 
-    @logged_in
     def do_change_focus(self, msg, match):
-        query_id, from_id, _ = telepot.glance(msg, flavor='callback_query')
+        query_id, _, _ = telepot.glance(msg, flavor='callback_query')
+        chat_id = msg['message']['chat']['id']
         room_name = match.group('room')
 
-        self.sendChatAction(from_id, 'typing')
-        client = self._get_client(from_id)
+        self.sendChatAction(chat_id, 'typing')
+        client = self._get_client(chat_id)
         client.set_focus_room(room_name)
         self.answerCallbackQuery(query_id, 'Done!')
-        self.sendMessage(from_id, 'You are now participating in {}'.format(room_name))
+        self.sendMessage(chat_id, 'You are now participating in {}'.format(room_name))
 
-    @logged_in
     def do_join(self, msg, match):
-        query_id, from_id, _ = telepot.glance(msg, flavor='callback_query')
+        query_id, _, _ = telepot.glance(msg, flavor='callback_query')
+        chat_id = msg['message']['chat']['id']
         room_name = match.group('room')
 
-        self.sendChatAction(from_id, 'typing')
-        client = self._get_client(from_id)
+        self.sendChatAction(chat_id, 'typing')
+        client = self._get_client(chat_id)
 
         ret = client.join_room(room_name)
         if not ret:
@@ -282,18 +282,18 @@ class MatrigramBot(telepot.Bot):
         else:
             self.answerCallbackQuery(query_id, 'Joined {}'.format(room_name))
 
-    @logged_in
     def do_nop(self, msg, _):
-        query_id, from_id, _ = telepot.glance(msg, flavor='callback_query')
+        query_id, _, _ = telepot.glance(msg, flavor='callback_query')
+        chat_id = msg['message']['chat']['id']
 
-        self.sendChatAction(from_id, 'typing')
+        self.sendChatAction(chat_id, 'typing')
         self.answerCallbackQuery(query_id, 'OK Boss!')
 
     @logged_in
     def status(self, msg, _):
-        from_id = msg['from']['id']
-        self.sendChatAction(from_id, 'typing')
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        self.sendChatAction(chat_id, 'typing')
+        client = self._get_client(chat_id)
 
         focus_room = client.get_focus_room_alias()
         joined_rooms = client.get_rooms_aliases()
@@ -302,58 +302,58 @@ class MatrigramBot(telepot.Bot):
         message = '''Status:
         Focused room: {}
         Joined rooms: {}'''.format(focus_room, helper.list_to_nice_str(joined_rooms_list))
-        self.sendMessage(from_id, message)
+        self.sendMessage(chat_id, message)
 
     @logged_in
     @focused
     def get_members(self, msg, _):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
 
         l = client.get_members()
         # TODO: we need to think how we avoid too long messages, for now send 10 elements
-        self.sendMessage(from_id, helper.list_to_nice_str(l[0:10]))
+        self.sendMessage(chat_id, helper.list_to_nice_str(l[0:10]))
 
     @logged_in
     def discover_rooms(self, msg, _):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
 
         rooms = client.discover_rooms()
-        self.sendMessage(from_id, rooms)
+        self.sendMessage(chat_id, rooms)
 
     @logged_in
     def create_room(self, msg, match):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
         room_alias = match.group('room_name')
         invitees = match.group('invitees')
 
         invitees = invitees.split() if invitees else None
         room_id, actual_alias = client.create_room(room_alias, is_public=True, invitees=invitees)
         if room_id:
-            self.sendMessage(from_id,
+            self.sendMessage(chat_id,
                              'Created room {} with room id {}'.format(actual_alias, room_id))
-            self.sendMessage(from_id,
+            self.sendMessage(chat_id,
                              'Invitees for the rooms are {}'.format(
                                  helper.list_to_nice_str(invitees)))
         else:
-            self.sendMessage(from_id, 'Could not create room')
+            self.sendMessage(chat_id, 'Could not create room')
 
     @logged_in
     @focused
     def forward_message_to_mc(self, msg, match):
         text = match.group('text')
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
 
         client.send_message(text)
 
     @logged_in
     @focused
     def forward_photo_to_mc(self, msg):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
 
         logger.debug(pprint_json(msg))
         file_id = msg['photo'][-1]['file_id']
@@ -369,8 +369,8 @@ class MatrigramBot(telepot.Bot):
     @logged_in
     @focused
     def forward_voice_to_mc(self, msg):
-        from_id = msg['from']['id']
-        client = self._get_client(from_id)
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
 
         file_id = msg['voice']['file_id']
         file = self.getFile(file_id)
@@ -386,9 +386,9 @@ class MatrigramBot(telepot.Bot):
     @logged_in
     @focused
     def forward_video_to_mc(self, msg):
-        from_id = msg['from']['id']
+        chat_id = msg['chat']['id']
 
-        client = self._get_client(from_id)
+        client = self._get_client(chat_id)
 
         file_id = msg['video']['file_id']
         file = self.getFile(file_id)
@@ -405,9 +405,9 @@ class MatrigramBot(telepot.Bot):
     @logged_in
     @focused
     def forward_gif_to_mc(self, msg):
-        from_id = msg['from']['id']
+        chat_id = msg['chat']['id']
 
-        client = self._get_client(from_id)
+        client = self._get_client(chat_id)
 
         file_id = msg['document']['file_id']
         file = self.getFile(file_id)
@@ -430,34 +430,34 @@ class MatrigramBot(telepot.Bot):
         Returns:
 
         """
-        from_id = self._get_from_id(client)
-        if not from_id:
+        chat_id = self._get_from_id(client)
+        if not chat_id:
             return
 
-        self.sendChatAction(from_id, 'typing')
-        self.sendMessage(from_id, "{}: {}".format(sender, msg))
+        self.sendChatAction(chat_id, 'typing')
+        self.sendMessage(chat_id, "{}: {}".format(sender, msg))
 
     def send_topic(self, sender, topic, client):
-        from_id = self._get_from_id(client)
-        if not from_id:
+        chat_id = self._get_from_id(client)
+        if not chat_id:
             return
 
-        self.sendChatAction(from_id, 'typing')
-        self.sendMessage(from_id, "{} changed topic to: \"{}\"".format(sender, topic))
+        self.sendChatAction(chat_id, 'typing')
+        self.sendMessage(chat_id, "{} changed topic to: \"{}\"".format(sender, topic))
 
     def send_kick(self, room, client):
         logger.info('got kicked from %s', room)
-        from_id = self._get_from_id(client)
-        if not from_id:
+        chat_id = self._get_from_id(client)
+        if not chat_id:
             return
 
-        self.sendMessage(from_id, 'You got kicked from {}'.format(room))
+        self.sendMessage(chat_id, 'You got kicked from {}'.format(room))
         client.set_focus_room(None)
 
     def send_invite(self, client, room):
         logger.info('join room %s?', room)
-        from_id = self._get_from_id(client)
-        if not from_id:
+        chat_id = self._get_from_id(client)
+        if not chat_id:
             return
 
         keyboard = {
@@ -475,7 +475,7 @@ class MatrigramBot(telepot.Bot):
             ]
         }
 
-        self.sendMessage(from_id, 'You have been invited to room {}, accept?'.format(room),
+        self.sendMessage(chat_id, 'You have been invited to room {}, accept?'.format(room),
                          reply_markup=keyboard)
 
     # temporary fixes are permanent, lets do it the hard way
@@ -517,31 +517,31 @@ class MatrigramBot(telepot.Bot):
 
     def send_photo(self, path, client):
         logger.info('path = %s', path)
-        from_id = self._get_from_id(client)
-        if not from_id:
+        chat_id = self._get_from_id(client)
+        if not chat_id:
             return
 
-        self.sendChatAction(from_id, 'upload_photo')
-        self._workaround_sendPhoto(path, from_id)
-        # self.sendPhoto(from_id, open(path, 'rb'))
+        self.sendChatAction(chat_id, 'upload_photo')
+        self._workaround_sendPhoto(path, chat_id)
+        # self.sendPhoto(chat_id, open(path, 'rb'))
 
     def send_voice(self, path, client):
         logger.info('path = %s', path)
-        from_id = self._get_from_id(client)
-        if not from_id:
+        chat_id = self._get_from_id(client)
+        if not chat_id:
             return
 
-        self.sendChatAction(from_id, 'upload_audio')
-        self._workaround_sendAudio(path, from_id)
+        self.sendChatAction(chat_id, 'upload_audio')
+        self._workaround_sendAudio(path, chat_id)
 
     def send_video(self, path, client):
         logger.info('path = %s', path)
-        from_id = self._get_from_id(client)
-        if not from_id:
+        chat_id = self._get_from_id(client)
+        if not chat_id:
             return
 
-        self.sendChatAction(from_id, 'upload_video')
-        self._workaround_sendVideo(path, from_id)
+        self.sendChatAction(chat_id, 'upload_video')
+        self._workaround_sendVideo(path, chat_id)
 
     def relay_typing(self, from_id):
         while True:
@@ -552,30 +552,30 @@ class MatrigramBot(telepot.Bot):
             time.sleep(2)
 
     def start_typing_thread(self, client):
-        from_id = self._get_from_id(client)
+        chat_id = self._get_from_id(client)
 
         with self.users_lock:
-            if self.users[from_id]['typing_thread']:
+            if self.users[chat_id]['typing_thread']:
                 return
 
-            typing_thread = Thread(target=self.relay_typing, args=(from_id,))
-            self.users[from_id]['should_type'] = True
+            typing_thread = Thread(target=self.relay_typing, args=(chat_id,))
+            self.users[chat_id]['should_type'] = True
             typing_thread.start()
-            self.users[from_id]['typing_thread'] = typing_thread
+            self.users[chat_id]['typing_thread'] = typing_thread
 
     def stop_typing_thread(self, client):
-        from_id = self._get_from_id(client)
+        chat_id = self._get_from_id(client)
 
         with self.users_lock:
-            if not self.users[from_id]['typing_thread']:
+            if not self.users[chat_id]['typing_thread']:
                 return
 
-            typing_thread = self.users[from_id]['typing_thread']
-            self.users[from_id]['should_type'] = False
+            typing_thread = self.users[chat_id]['typing_thread']
+            self.users[chat_id]['should_type'] = False
         typing_thread.join()
 
         with self.users_lock:
-            self.users[from_id]['typing_thread'] = None
+            self.users[chat_id]['typing_thread'] = None
 
     def _get_client(self, from_id):
         """Get matrigram client.
