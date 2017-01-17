@@ -19,6 +19,8 @@ BOT_BASE_URL = 'https://api.telegram.org/bot{token}/{path}'
 BOT_FILE_URL = 'https://api.telegram.org/file/bot{token}/{file_path}'
 logger = logging.getLogger('matrigram')
 
+OPTS_IN_ROW = 4
+
 
 def logged_in(func):
     def func_wrapper(self, msg, *args):
@@ -218,9 +220,10 @@ class MatrigramBot(telepot.Bot):
             self.sendMessage(chat_id, 'Nothing to leave...')
             return
 
+        opts = [{'text': room, 'callback_data': 'LEAVE {}'.format(room)} for room in rooms]
+
         keyboard = {
-            'inline_keyboard': [[{'text': room,
-                                  'callback_data': 'LEAVE {}'.format(room)} for room in rooms]]
+            'inline_keyboard': [chunk for chunk in helper.chunks(opts, OPTS_IN_ROW)]
         }
         self.sendMessage(chat_id, 'Choose a room to leave:', reply_markup=keyboard)
 
@@ -252,9 +255,10 @@ class MatrigramBot(telepot.Bot):
             self.sendMessage(chat_id, 'You need to be at least in one room to use this command.')
             return
 
+        opts = [{'text': room, 'callback_data': 'FOCUS {}'.format(room)} for room in rooms]
+
         keyboard = {
-            'inline_keyboard': [[{'text': room,
-                                  'callback_data': 'FOCUS {}'.format(room)} for room in rooms]]
+            'inline_keyboard': [chunk for chunk in helper.chunks(opts, OPTS_IN_ROW)]
         }
         self.sendMessage(chat_id, 'Choose a room to focus:', reply_markup=keyboard)
 

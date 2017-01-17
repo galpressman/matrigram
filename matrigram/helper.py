@@ -53,3 +53,14 @@ def list_to_nice_str(l):
         str: A string that can be printed.
     """
     return ', '.join(l)
+
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l.
+
+    Args:
+        l (list): List to be split.
+        n (int): Size of chunk.
+    """
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
