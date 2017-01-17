@@ -435,7 +435,7 @@ class MatrigramBot(telepot.Bot):
         Returns:
 
         """
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
@@ -443,7 +443,7 @@ class MatrigramBot(telepot.Bot):
         self.sendMessage(chat_id, "{}: {}".format(sender, msg))
 
     def send_topic(self, sender, topic, client):
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
@@ -452,7 +452,7 @@ class MatrigramBot(telepot.Bot):
 
     def send_kick(self, room, client):
         logger.info('got kicked from %s', room)
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
@@ -469,7 +469,7 @@ class MatrigramBot(telepot.Bot):
 
     def send_invite(self, client, room):
         logger.info('join room %s?', room)
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
@@ -492,9 +492,9 @@ class MatrigramBot(telepot.Bot):
                          reply_markup=keyboard)
 
     # temporary fixes are permanent, lets do it the hard way
-    def _workaround_sendPhoto(self, path, from_id):
+    def _workaround_sendPhoto(self, path, chat_id):
         payload = {
-            'chat_id': from_id
+            'chat_id': chat_id
         }
 
         files = {
@@ -504,9 +504,9 @@ class MatrigramBot(telepot.Bot):
         base_url = BOT_BASE_URL.format(token=self._token, path='sendPhoto')
         requests.post(base_url, params=payload, files=files)
 
-    def _workaround_sendAudio(self, path, from_id):
+    def _workaround_sendAudio(self, path, chat_id):
         payload = {
-            'chat_id': from_id
+            'chat_id': chat_id
         }
 
         files = {
@@ -516,9 +516,9 @@ class MatrigramBot(telepot.Bot):
         base_url = BOT_BASE_URL.format(token=self._token, path='sendAudio')
         requests.post(base_url, params=payload, files=files)
 
-    def _workaround_sendVideo(self, path, from_id):
+    def _workaround_sendVideo(self, path, chat_id):
         payload = {
-            'chat_id': from_id
+            'chat_id': chat_id
         }
 
         files = {
@@ -530,7 +530,7 @@ class MatrigramBot(telepot.Bot):
 
     def send_photo(self, path, client):
         logger.info('path = %s', path)
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
@@ -540,7 +540,7 @@ class MatrigramBot(telepot.Bot):
 
     def send_voice(self, path, client):
         logger.info('path = %s', path)
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
@@ -549,23 +549,23 @@ class MatrigramBot(telepot.Bot):
 
     def send_video(self, path, client):
         logger.info('path = %s', path)
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
         self.sendChatAction(chat_id, 'upload_video')
         self._workaround_sendVideo(path, chat_id)
 
-    def relay_typing(self, from_id):
+    def relay_typing(self, chat_id):
         while True:
             with self.users_lock:
-                if not self.users[from_id]['should_type']:
+                if not self.users[chat_id]['should_type']:
                     return
-            self.sendChatAction(from_id, 'typing')
+            self.sendChatAction(chat_id, 'typing')
             time.sleep(2)
 
     def start_typing_thread(self, client):
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
 
         with self.users_lock:
             if self.users[chat_id]['typing_thread']:
@@ -577,7 +577,7 @@ class MatrigramBot(telepot.Bot):
             self.users[chat_id]['typing_thread'] = typing_thread
 
     def stop_typing_thread(self, client):
-        chat_id = self._get_from_id(client)
+        chat_id = self._get_chat_id(client)
 
         with self.users_lock:
             if not self.users[chat_id]['typing_thread']:
@@ -590,33 +590,33 @@ class MatrigramBot(telepot.Bot):
         with self.users_lock:
             self.users[chat_id]['typing_thread'] = None
 
-    def _get_client(self, from_id):
+    def _get_client(self, chat_id):
         """Get matrigram client.
 
         Args:
-            from_id: Telegram user id.
+            chat_id: Telegram user id.
 
         Returns:
-            MatrigramClient: The client associated to the telegram user with `from_id`.
+            MatrigramClient: The client associated to the telegram user with `chat_id`.
         """
         try:
-            return self.users[from_id]['client']
+            return self.users[chat_id]['client']
         except KeyError:
-            logger.error('from_id doesnt exist?')
+            logger.error('chat_id doesnt exist?')
             return None
 
-    def _get_from_id(self, client):
+    def _get_chat_id(self, client):
         """Get telegram id associated with client.
 
         Args:
             client (MatrigramClient): The client to be queried.
 
         Returns:
-            str: The `from_id` associated to the client.
+            str: The `chat_id` associated to the client.
         """
-        for from_id, user in self.users.items():
+        for chat_id, user in self.users.items():
             if user['client'] == client:
-                return from_id
+                return chat_id
 
         logger.error('client without user?')
         return None
