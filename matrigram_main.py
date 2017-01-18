@@ -25,6 +25,9 @@ def main():
     parser.add_argument('--config', default='config.json', help='path to config file')
     args = parser.parse_args()
 
+    if not os.path.isfile(args.config):
+        logging.error('config file not found, please use --config flag or create config.json file')
+        return
     config = helper.get_config(args.config)
     media_dir = os.path.join(tempfile.gettempdir(), "matrigram")
     if not os.path.exists(media_dir):
