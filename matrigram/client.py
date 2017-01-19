@@ -160,11 +160,10 @@ class MatrigramClient(object):
         return self.focus_room_id is not None
 
     def get_members(self):
-        # workaround until sdk pull request is merged
-        res = self.client.api._send("GET", "/rooms/{}/members".format(self.focus_room_id),
-                                    api_path='/_matrix/client/r0')
-        return [event["content"]["displayname"].encode('utf-8') for event in res["chunk"] if
-                event["content"].get("displayname") and event["content"]["membership"] == "join"]
+        room_obj = self.get_room_obj(self.focus_room_id)
+        rtn = room_obj.get_joined_members()
+
+        return [member['displayname'] for _, member in rtn.items() if member.get('displayname')]
 
     def set_name(self, name):
         # maybe we should generate an event to catch the correct server address from the answer
