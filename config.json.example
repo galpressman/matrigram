@@ -1,4 +1,4 @@
 {
-  "telegram_token": "my_telegram_token_here",
-  "server": "http://localhost:8008"
+  "telegram_token": "tg_token",
+  "server": "http://matrix.org"
 }

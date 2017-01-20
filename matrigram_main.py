@@ -1,4 +1,3 @@
-import argparse
 import logging
 import logging.handlers
 import os
@@ -21,14 +20,12 @@ def main():
     logger.addHandler(sh)
     logger.addHandler(fh)
 
-    parser = argparse.ArgumentParser(description=helper.HELP_MSG)
-    parser.add_argument('--config', default='config.json', help='path to config file')
-    args = parser.parse_args()
-
-    if not os.path.isfile(args.config):
-        logging.error('config file not found, please use --config flag or create config.json file')
+    if not os.path.isfile(helper.CONFIG_PATH):
+        logger.error('Please fill the config file at %s', helper.CONFIG_PATH)
+        helper.init_config()
         return
-    config = helper.get_config(args.config)
+
+    config = helper.get_config(helper.CONFIG_PATH)
     media_dir = os.path.join(tempfile.gettempdir(), "matrigram")
     if not os.path.exists(media_dir):
         logging.debug('creating dir %s', media_dir)
@@ -36,6 +33,9 @@ def main():
 
     config['media_dir'] = media_dir
     token = config['telegram_token']
+    if not helper.token_changed(config):
+        logger.error('Please enter you tg token in %s', helper.CONFIG_PATH)
+        return
 
     mg = MatrigramBot(token, config=config)
     mg.message_loop(run_forever='-I- matrigram running...')

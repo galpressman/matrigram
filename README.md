@@ -10,7 +10,8 @@ $ pip install -r requirements.txt
 ```
 
 ###Usage
-First fill `config.json` with your details.
+First fill `~/.matrigramconfig` with your details (similar to `config.json.example`).
+If the config file doesn't exist, matrigram will create one for you to fill.
 
 Run using `matrigram_main.py`, which will enter an infinite listening loop:
 ```python

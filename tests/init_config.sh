@@ -4,8 +4,8 @@
 set -e
 set -x
 
-CONFIG_FILE="config.json"
+CONFIG_FILE="$HOME/.matrigramconfig"
 
 cp -f config.json.example $CONFIG_FILE
 set +x
-sed -i -- "s/my_telegram_token_here/""${TG_TOKEN}""/g" $CONFIG_FILE
+sed -i -- "s/tg_token/""${TG_TOKEN}""/g" $CONFIG_FILE
