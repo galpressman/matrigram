@@ -1,0 +1,3 @@
+include config.json.example
+include tox.ini
+include README.md
