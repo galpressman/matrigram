@@ -1,8 +1,11 @@
 import json
 import os
+import shutil
+
 import requests
 
 HELP_MSG = 'matrigram: A bridge between matrix and telegram'
+CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.matrigramconfig')
 
 
 def pprint_json(to_print):
@@ -64,3 +67,25 @@ def chunks(l, n):
     """
     for i in range(0, len(l), n):
         yield l[i:i + n]
+
+
+def init_config():
+    """Init ~/.matrigramconfig.
+
+    """
+    shutil.copyfile('config.json.example', CONFIG_PATH)
+
+
+def token_changed(config):
+    """Check if telegram token is provided.
+
+    Args:
+        config (dict): Loaded config file.
+
+    Returns:
+        bool: True if the token has changed, else False.
+    """
+    token = config['telegram_token']
+    if token == 'tg_token':
+        return False
+    return True
