@@ -271,11 +271,11 @@ class MatrigramBot(telepot.Bot):
         client = self._get_client(chat_id)
 
         client.set_focus_room(room_name)
+        self.sendMessage(chat_id, 'You are now participating in {}'.format(room_name))
         self.sendMessage(chat_id, '{} Room history:'.format(room_name))
         client.backfill_previous_messages()
 
         self.answerCallbackQuery(query_id, 'Done!')
-        self.sendMessage(chat_id, 'You are now participating in {}'.format(room_name))
 
     def do_join(self, msg, match):
         query_id, _, _ = telepot.glance(msg, flavor='callback_query')
