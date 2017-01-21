@@ -29,6 +29,8 @@ class MatrigramClient(object):
             'm.audio': self.forward_voice_to_tb,
             'm.video': self.forward_video_to_tb,
         }
+        self.room_listener_uid = None
+        self.ephemeral_listener_uid = None
 
     def login(self, username, password):
         try:
@@ -130,28 +132,21 @@ class MatrigramClient(object):
 
         # remove current focus room listeners
         if self.focus_room_id is not None:
-            # tmp solution, maybe implement this in the SDK
             room_obj = self.get_room_obj(self.focus_room_id)
-            for listener in room_obj.listeners:
-                if listener['callback'] == self.on_event:
-                    room_obj.listeners.remove(listener)
-                    logger.debug('removed listener from room %s',
-                                 self._room_id_to_alias(self.focus_room_id))
-            for ephemeral_listener in room_obj.ephemeral_listeners:
-                if ephemeral_listener['callback'] == self.on_ephemeral_event:
-                    room_obj.ephemeral_listeners.remove(ephemeral_listener)
-                    logger.debug('removed ephemeral listener from room %s',
-                                 self._room_id_to_alias(self.focus_room_id))
+            room_obj.remove_listener(self.room_listener_uid)
+            self.room_listener_uid = None
+            room_obj.remove_ephemeral_listener(self.ephemeral_listener_uid)
+            self.ephemeral_listener_uid = None
+            logger.info("remove focus room %s", self.focus_room_id)
             self.focus_room_id = None
 
         # set new room on focus
         if room_id_or_alias is not None:
             self.focus_room_id = self._room_alias_to_id(room_id_or_alias)
             room_obj = self.get_room_obj(self.focus_room_id)
-            room_obj.add_listener(self.on_event)
-            room_obj.add_ephemeral_listener(self.on_ephemeral_event)
-
-        logger.debug("set focus room to %s", self.focus_room_id)
+            self.room_listener_uid = room_obj.add_listener(self.on_event)
+            self.ephemeral_listener_uid = room_obj.add_ephemeral_listener(self.on_ephemeral_event)
+            logger.info("set focus room to %s", self.focus_room_id)
 
     def get_focus_room_alias(self):
         return self._room_id_to_alias(self.focus_room_id)
