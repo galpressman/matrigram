@@ -71,9 +71,9 @@ class MatrigramBot(telepot.Bot):
         ]
 
         callback_query_routes = [
-            (r'^LEAVE (?P<room>\S+)$', self.do_leave),
+            (r'^LEAVE (?P<room>\S+)$', self.leave_callback),
             (r'^FOCUS (?P<room>\S+)$', self.change_focus_room_callback),
-            (r'^JOIN (?P<room>\S+)$', self.do_join),
+            (r'^JOIN (?P<room>\S+)$', self.invite_callback),
             (r'^NOP$', self.do_nop),
         ]
 
@@ -225,7 +225,7 @@ class MatrigramBot(telepot.Bot):
         }
         self.sendMessage(chat_id, 'Choose a room to leave:', reply_markup=keyboard)
 
-    def do_leave(self, msg, match):
+    def leave_callback(self, msg, match):
         query_id, _, _ = telepot.glance(msg, flavor='callback_query')
         chat_id = msg['message']['chat']['id']
         room_name = match.group('room')
@@ -278,7 +278,7 @@ class MatrigramBot(telepot.Bot):
             self.sendMessage(chat_id, '{} Room history:'.format(room_name))
             client.backfill_previous_messages()
 
-    def do_join(self, msg, match):
+    def invite_callback(self, msg, match):
         query_id, _, _ = telepot.glance(msg, flavor='callback_query')
         chat_id = msg['message']['chat']['id']
         room_name = match.group('room')
