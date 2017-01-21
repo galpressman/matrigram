@@ -166,10 +166,7 @@ class MatrigramClient(object):
         return [member['displayname'] for _, member in rtn.items() if member.get('displayname')]
 
     def set_name(self, name):
-        # maybe we should generate an event to catch the correct server address from the answer
-        server = re.sub(r'https?://', '', self.server)
-        user_id = '@{}:{}'.format(self.username, server)
-        user = self.client.get_user(user_id)
+        user = self.client.get_user(self.client.user_id)
         user.set_display_name(name)
 
     def create_room(self, alias, is_public=False, invitees=()):
