@@ -461,7 +461,7 @@ class MatrigramBot(telepot.Bot):
         self.sendMessage(chat_id, "{} changed topic to: \"{}\"".format(sender, topic))
 
     def send_kick(self, room_name, client):
-        logger.info('got kicked from %s', room)
+        logger.info('got kicked from %s', room_name)
         chat_id = self._get_chat_id(client)
         if not chat_id:
             return
