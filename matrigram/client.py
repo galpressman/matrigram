@@ -3,7 +3,6 @@
 import logging
 import mimetypes
 import os
-import re
 
 import requests
 from matrix_client.client import MatrixClient
