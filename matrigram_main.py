@@ -33,7 +33,7 @@ def main():
 
     config['media_dir'] = media_dir
     token = config['telegram_token']
-    if not helper.token_changed(config):
+    if not helper.config_filled():
         logger.error('Please enter you tg token in %s', helper.CONFIG_PATH)
         return
 

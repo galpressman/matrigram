@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import shutil
@@ -69,6 +70,14 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, 'rb') as f:
+        for chunk in iter(lambda: f.read(4096), b''):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
 def init_config():
     """Init ~/.matrigramconfig.
 
@@ -76,16 +85,13 @@ def init_config():
     shutil.copyfile('config.json.example', CONFIG_PATH)
 
 
-def token_changed(config):
-    """Check if telegram token is provided.
-
-    Args:
-        config (dict): Loaded config file.
+def config_filled():
+    """Check if the user filled the config file.
 
     Returns:
-        bool: True if the token has changed, else False.
+        bool: True if config is filled, else False.
     """
-    token = config['telegram_token']
-    if token == 'tg_token':
-        return False
-    return True
+    orig_md5 = md5('config.json.example')
+    config_md5 = md5(CONFIG_PATH)
+
+    return orig_md5 != config_md5
