@@ -21,17 +21,13 @@ def pprint_json(to_print):
     return json.dumps(to_print, sort_keys=True, indent=4)
 
 
-def get_config(config_name):
+def get_config():
     """Query config file.
-
-    Args:
-        config_name (str): The name of the config file.
 
     Returns:
         dict: The config dictionary.
     """
-    config_path = os.path.join(os.path.dirname(__file__), '..', config_name)
-    with open(config_path) as config_file:
+    with open(CONFIG_PATH) as config_file:
         return json.load(config_file)
 
 

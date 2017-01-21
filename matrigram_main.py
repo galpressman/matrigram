@@ -25,7 +25,7 @@ def main():
         helper.init_config()
         return
 
-    config = helper.get_config(helper.CONFIG_PATH)
+    config = helper.get_config()
     media_dir = os.path.join(tempfile.gettempdir(), "matrigram")
     if not os.path.exists(media_dir):
         logging.debug('creating dir %s', media_dir)
