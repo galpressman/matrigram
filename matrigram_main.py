@@ -1,10 +1,14 @@
 import logging
 import logging.handlers
 import os
+import sys
 import tempfile
 
 from matrigram import helper
 from matrigram.bot import MatrigramBot
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 def main():
