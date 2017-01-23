@@ -55,6 +55,18 @@ def list_to_nice_str(l):
     return ', '.join(l)
 
 
+def list_to_nice_lines(l):
+    """Convert a string list to lines ready to printed.
+
+    Args:
+        l (list): List of strings to be printed
+
+    Returns:
+        str: A line separated string that can be printed.
+    """
+    return '\n'.join(l)
+
+
 def chunks(l, n):
     """Yield successive n-sized chunks from l.
 

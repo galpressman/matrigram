@@ -329,7 +329,7 @@ class MatrigramBot(telepot.Bot):
         client = self._get_client(chat_id)
 
         rooms = client.discover_rooms()
-        self.sendMessage(chat_id, rooms)
+        self.sendMessage(chat_id, helper.list_to_nice_lines(rooms))
 
     @logged_in
     def create_room(self, msg, match):
