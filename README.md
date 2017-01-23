@@ -22,7 +22,7 @@ mg.message_loop(run_forever='-I- matrigram running...')
 The documentation is hosted on [Read the Docs](http://matrigram.readthedocs.org).
 
 ###Comaptibility
-matrigram works on python2.7+.
+matrigram works on python2.7.
 
 We constantly update our [matrix-python-sdk](https://github.com/matrix-org/matrix-python-sdk) version, so
 requirements will _probably_ change frequently to keep up.
