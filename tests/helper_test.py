@@ -18,3 +18,9 @@ def test_list_to_str():
     l = ['room1', 'room2', 'room3']
 
     assert helper.list_to_nice_str(l) == 'room1, room2, room3'
+
+
+def test_list_to_nice_lines():
+    l = ['room1', 'room2', 'room3']
+
+    assert helper.list_to_nice_lines(l) == 'room1\nroom2\nroom3'
