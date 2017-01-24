@@ -518,9 +518,10 @@ class MatrigramBot(telepot.Bot):
                          reply_markup=keyboard)
 
     # temporary fixes are permanent, lets do it the hard way
-    def _workaround_sendPhoto(self, path, chat_id):
+    def _workaround_sendPhoto(self, sender, path, chat_id):
         payload = {
-            'chat_id': chat_id
+            'chat_id': chat_id,
+            'caption': sender,
         }
 
         files = {
@@ -530,9 +531,10 @@ class MatrigramBot(telepot.Bot):
         base_url = BOT_BASE_URL.format(token=self._token, path='sendPhoto')
         requests.post(base_url, params=payload, files=files)
 
-    def _workaround_sendAudio(self, path, chat_id):
+    def _workaround_sendAudio(self, sender, path, chat_id):
         payload = {
-            'chat_id': chat_id
+            'chat_id': chat_id,
+            'caption': sender,
         }
 
         files = {
@@ -542,9 +544,10 @@ class MatrigramBot(telepot.Bot):
         base_url = BOT_BASE_URL.format(token=self._token, path='sendAudio')
         requests.post(base_url, params=payload, files=files)
 
-    def _workaround_sendVideo(self, path, chat_id):
+    def _workaround_sendVideo(self, sender, path, chat_id):
         payload = {
-            'chat_id': chat_id
+            'chat_id': chat_id,
+            'caption': sender,
         }
 
         files = {
@@ -554,33 +557,33 @@ class MatrigramBot(telepot.Bot):
         base_url = BOT_BASE_URL.format(token=self._token, path='sendVideo')
         requests.post(base_url, params=payload, files=files)
 
-    def send_photo(self, path, client):
+    def send_photo(self, sender, path, client):
         logger.info('path = %s', path)
         chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
         self.sendChatAction(chat_id, 'upload_photo')
-        self._workaround_sendPhoto(path, chat_id)
+        self._workaround_sendPhoto(sender, path, chat_id)
         # self.sendPhoto(chat_id, open(path, 'rb'))
 
-    def send_voice(self, path, client):
+    def send_voice(self, sender, path, client):
         logger.info('path = %s', path)
         chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
         self.sendChatAction(chat_id, 'upload_audio')
-        self._workaround_sendAudio(path, chat_id)
+        self._workaround_sendAudio(sender, path, chat_id)
 
-    def send_video(self, path, client):
+    def send_video(self, sender, path, client):
         logger.info('path = %s', path)
         chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
         self.sendChatAction(chat_id, 'upload_video')
-        self._workaround_sendVideo(path, chat_id)
+        self._workaround_sendVideo(sender, path, chat_id)
 
     def relay_typing(self, chat_id):
         while True:

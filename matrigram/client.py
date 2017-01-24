@@ -257,16 +257,19 @@ class MatrigramClient(object):
         return path
 
     def forward_image_to_tb(self, event):
+        sender = event['sender'].split(':')[0].encode('utf-8')
         path = self.download_from_event(event)
-        self.tb.send_photo(path, self)
+        self.tb.send_photo(sender, path, self)
 
     def forward_voice_to_tb(self, event):
+        sender = event['sender'].split(':')[0].encode('utf-8')
         path = self.download_from_event(event)
-        self.tb.send_voice(path, self)
+        self.tb.send_voice(sender, path, self)
 
     def forward_video_to_tb(self, event):
+        sender = event['sender'].split(':')[0].encode('utf-8')
         path = self.download_from_event(event)
-        self.tb.send_video(path, self)
+        self.tb.send_video(sender, path, self)
 
     def forward_emote_to_tb(self, event):
         sender = event['sender'].split(':')[0].encode('utf-8')
