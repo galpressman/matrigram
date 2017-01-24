@@ -33,4 +33,8 @@ Bot commands
   Room alias should be provided without the homeserver suffix.
   Invitees is an optional space seperated list of matrix ids to be invited.
 
+- ``/emote <text>``
+
+  Send an emote to the room.
+
 Every other message (text, photos, videos) which is sent while logged in and focused to a room will be propagated to the room, and vice versa for the room messages being sent from other users.
