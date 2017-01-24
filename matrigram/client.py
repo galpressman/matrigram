@@ -163,6 +163,10 @@ class MatrigramClient(object):
         user = self.client.get_user(self.client.user_id)
         user.set_display_name(name)
 
+    def emote(self, body):
+        room_obj = self.get_room_obj(self.focus_room_id)
+        room_obj.send_emote(body)
+
     def create_room(self, alias, is_public=False, invitees=()):
         try:
             room_obj = self.client.create_room(alias, is_public, invitees)

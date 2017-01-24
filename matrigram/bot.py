@@ -67,6 +67,7 @@ class MatrigramBot(telepot.Bot):
             (r'^/members$', self.get_members),
             (r'^/create_room (?P<room_name>[\S]+)(?P<invitees>\s.*\S)*$', self.create_room),
             (r'^/setname\s(?P<matrix_name>[^$]+)$', self.set_name),
+            (r'^/emote (?P<text>[^/].*)$', self.emote),
             (r'^(?P<text>[^/].*)$', self.forward_message_to_mc),
         ]
 
@@ -474,6 +475,15 @@ class MatrigramBot(telepot.Bot):
         name = match.group('matrix_name')
         client.set_name(name)
         self.sendMessage(chat_id, 'Set matrix display name to: {}'.format(name))
+
+    @logged_in
+    @focused
+    def emote(self, msg, match):
+        chat_id = msg['chat']['id']
+        client = self._get_client(chat_id)
+        body = match.group('text')
+
+        client.emote(body)
 
     def send_invite(self, client, room):
         logger.info('join room %s?', room)
