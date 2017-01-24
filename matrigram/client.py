@@ -27,6 +27,7 @@ class MatrigramClient(object):
             'm.image': self.forward_image_to_tb,
             'm.audio': self.forward_voice_to_tb,
             'm.video': self.forward_video_to_tb,
+            'm.emote': self.forward_emote_to_tb,
         }
         self.room_listener_uid = None
         self.ephemeral_listener_uid = None
@@ -266,6 +267,11 @@ class MatrigramClient(object):
     def forward_video_to_tb(self, event):
         path = self.download_from_event(event)
         self.tb.send_video(path, self)
+
+    def forward_emote_to_tb(self, event):
+        sender = event['sender'].split(':')[0].encode('utf-8')
+        content = event['content']['body'].encode('utf-8')
+        self.tb.send_emote(sender, content, self)
 
     def _room_id_to_alias(self, id):
         """Convert room id to alias.

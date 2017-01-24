@@ -451,6 +451,14 @@ class MatrigramBot(telepot.Bot):
         self.sendChatAction(chat_id, 'typing')
         self.sendMessage(chat_id, "{}: {}".format(sender, msg))
 
+    def send_emote(self, sender, msg, client):
+        chat_id = self._get_chat_id(client)
+        if not chat_id:
+            return
+
+        self.sendChatAction(chat_id, 'typing')
+        self.sendMessage(chat_id, '* {} {}'.format(sender, msg))
+
     def send_topic(self, sender, topic, client):
         chat_id = self._get_chat_id(client)
         if not chat_id:
