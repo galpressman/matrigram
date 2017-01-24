@@ -7,3 +7,4 @@ focus - /focus
 status - /status
 create_room - /create_room <room_alias> [invitees]
 set_name - /setname <new_name>
+emote = /emote <text>
