@@ -67,7 +67,7 @@ class MatrigramBot(telepot.Bot):
             (r'^/members$', self.get_members),
             (r'^/create_room (?P<room_name>[\S]+)(?P<invitees>\s.*\S)*$', self.create_room),
             (r'^/setname\s(?P<matrix_name>[^$]+)$', self.set_name),
-            (r'^/emote (?P<text>[^/].*)$', self.emote),
+            (r'^/me (?P<text>[^/].*)$', self.emote),
             (r'^(?P<text>[^/].*)$', self.forward_message_to_mc),
         ]
 
