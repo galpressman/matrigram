@@ -4,6 +4,11 @@
 A bridge between *[matrix](https://www.matrix.org)* and *[telegram](https://www.telegram.org)*.
 
 ###Installation
+Clone the repository:
+```bash
+$ git clone https://github.com/GalPressman/matrigram.git
+$ cd matrigram
+```
 Install dependencies using:
 ```bash
 $ pip install -r requirements.txt
