@@ -1,9 +1,9 @@
-#![matrigram][logo]matrigram
+# ![matrigram][logo]matrigram
 [![Build Status](https://travis-ci.org/GalPressman/matrigram.svg?branch=master)](https://travis-ci.org/GalPressman/matrigram) [![Documentation Status](https://readthedocs.org/projects/matrigram/badge/?version=latest)](http://matrigram.readthedocs.io/en/latest/?badge=latest)
 
 A bridge between *[matrix](https://www.matrix.org)* and *[telegram](https://www.telegram.org)*.
 
-###Installation
+### Installation
 Clone the repository:
 ```bash
 $ git clone https://github.com/GalPressman/matrigram.git
@@ -14,7 +14,7 @@ Install dependencies using:
 $ pip install -r requirements.txt
 ```
 
-###Usage
+### Usage
 First fill `~/.matrigramconfig` with your details (similar to `config.json.example`).
 If the config file doesn't exist, matrigram will create one for you to fill.
 
@@ -23,10 +23,10 @@ Run using `matrigram_main.py`, which will enter an infinite listening loop:
 mg.message_loop(run_forever='-I- matrigram running...')
 ```
 
-###Documentation
+### Documentation
 The documentation is hosted on [Read the Docs](http://matrigram.readthedocs.org).
 
-###Comaptibility
+### Comaptibility
 matrigram works on python2.7.
 
 We constantly update our [matrix-python-sdk](https://github.com/matrix-org/matrix-python-sdk) version, so
