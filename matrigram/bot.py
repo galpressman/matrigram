@@ -72,9 +72,9 @@ class MatrigramBot(telepot.Bot):
         ]
 
         callback_query_routes = [
-            (r'^LEAVE (?P<room>\S+)$', self.do_leave),
-            (r'^FOCUS (?P<room>\S+)$', self.do_change_focus),
-            (r'^JOIN (?P<room>\S+)$', self.do_join),
+            (r'^LEAVE (?P<room>\S+)$', self.leave_callback),
+            (r'^FOCUS (?P<room>\S+)$', self.change_focus_room_callback),
+            (r'^JOIN (?P<room>\S+)$', self.invite_callback),
             (r'^NOP$', self.do_nop),
         ]
 
@@ -171,16 +171,13 @@ class MatrigramBot(telepot.Bot):
                 'typing_thread': None,
                 'should_type': False,
             }
-
             rooms = client.get_rooms_aliases()
             logger.debug("rooms are: %s", rooms)
 
             if rooms:
                 room_aliases = '\n'.join([room_alias[0] for room_alias in rooms.values()])
                 self.sendMessage(chat_id, 'You are currently in rooms:\n{}'.format(room_aliases))
-                self.sendMessage(chat_id,
-                                 'You are now participating in: {}'.format(
-                                     client.get_focus_room_alias()))
+                self.do_change_focus(client.get_next_room(None), chat_id)
             logger.debug('%s user state:\n%s', chat_id, self.users[chat_id])
         else:
             self.sendMessage(chat_id, login_message)
@@ -210,6 +207,7 @@ class MatrigramBot(telepot.Bot):
             self.sendMessage(chat_id, 'Can\'t join room')
         else:
             self.sendMessage(chat_id, "Joined {}".format(room_name))
+            self.do_change_focus(room_name, chat_id)
 
     @logged_in
     def leave_room(self, msg, _):
@@ -228,21 +226,18 @@ class MatrigramBot(telepot.Bot):
         }
         self.sendMessage(chat_id, 'Choose a room to leave:', reply_markup=keyboard)
 
-    def do_leave(self, msg, match):
+    def leave_callback(self, msg, match):
         query_id, _, _ = telepot.glance(msg, flavor='callback_query')
         chat_id = msg['message']['chat']['id']
         room_name = match.group('room')
         client = self._get_client(chat_id)
 
-        prev_focus_room = client.get_focus_room_alias()
-        client.leave_room(room_name)
+        logger.info('leaving %s', room_name)
         self.sendMessage(chat_id, 'Left {}'.format(room_name))
-        curr_focus_room = client.get_focus_room_alias()
+        if room_name == client.get_focus_room_alias():
+            self.do_change_focus(client.get_next_room(room_name), chat_id)
 
-        if curr_focus_room != prev_focus_room and curr_focus_room is not None:
-            self.sendMessage(chat_id,
-                             'You are now participating in: {}'.format(
-                                 client.get_focus_room_alias()))
+        client.leave_room(room_name)
 
         self.answerCallbackQuery(query_id, 'Done!')
 
@@ -263,22 +258,28 @@ class MatrigramBot(telepot.Bot):
         }
         self.sendMessage(chat_id, 'Choose a room to focus:', reply_markup=keyboard)
 
-    def do_change_focus(self, msg, match):
+    def change_focus_room_callback(self, msg, match):
         query_id, _, _ = telepot.glance(msg, flavor='callback_query')
         chat_id = msg['message']['chat']['id']
         room_name = match.group('room')
-
-        self.sendChatAction(chat_id, 'typing')
-        client = self._get_client(chat_id)
-
-        client.set_focus_room(room_name)
-        self.sendMessage(chat_id, 'You are now participating in {}'.format(room_name))
-        self.sendMessage(chat_id, '{} Room history:'.format(room_name))
-        client.backfill_previous_messages()
-
+        self.do_change_focus(room_name, chat_id)
         self.answerCallbackQuery(query_id, 'Done!')
 
-    def do_join(self, msg, match):
+    def do_change_focus(self, room_name, chat_id):
+        client = self._get_client(chat_id)
+        if room_name == client.get_focus_room_alias():
+            return
+        self.sendChatAction(chat_id, 'typing')
+
+        client.set_focus_room(room_name)
+        if room_name is None:
+            self.sendMessage(chat_id, 'You are currently not participating in any room')
+        else:
+            self.sendMessage(chat_id, 'You are now participating in {}'.format(room_name))
+            self.sendMessage(chat_id, '{} Room history:'.format(room_name))
+            client.backfill_previous_messages()
+
+    def invite_callback(self, msg, match):
         query_id, _, _ = telepot.glance(msg, flavor='callback_query')
         chat_id = msg['message']['chat']['id']
         room_name = match.group('room')
@@ -291,6 +292,7 @@ class MatrigramBot(telepot.Bot):
             self.answerCallbackQuery(query_id, 'Can\'t join room')
         else:
             self.answerCallbackQuery(query_id, 'Joined {}'.format(room_name))
+            self.do_change_focus(room_name, chat_id)
 
     def do_nop(self, msg, _):
         query_id, _, _ = telepot.glance(msg, flavor='callback_query')
@@ -467,14 +469,15 @@ class MatrigramBot(telepot.Bot):
         self.sendChatAction(chat_id, 'typing')
         self.sendMessage(chat_id, "{} changed topic to: \"{}\"".format(sender, topic))
 
-    def send_kick(self, room, client):
-        logger.info('got kicked from %s', room)
+    def send_kick(self, room_name, client):
+        logger.info('got kicked from %s', room_name)
         chat_id = self._get_chat_id(client)
         if not chat_id:
             return
 
-        self.sendMessage(chat_id, 'You got kicked from {}'.format(room))
-        client.set_focus_room(None)
+        self.sendMessage(chat_id, 'You got kicked from {}'.format(room_name))
+        if client.get_focus_room_alias() == room_name:
+            self.do_change_focus(client.get_next_room(None), chat_id)
 
     @logged_in
     def set_name(self, msg, match):

@@ -36,13 +36,16 @@ class MatrigramClient(object):
         try:
             self.token = self.client.login_with_password(username, password)
             logger.info('token = %s', self.token)
+            self.focus_room_id = None
+            '''
             rooms = self.get_rooms_aliases()
             if rooms:
                 # set focus room to "first" room
                 self.set_focus_room(rooms.keys()[0])
-
+            '''
             self.client.add_invite_listener(self.on_invite_event)
             self.client.add_leave_listener(self.on_leave_event)
+
             self.client.start_listener_thread()
             return True, "OK"
         except MatrixRequestError:
@@ -90,6 +93,7 @@ class MatrigramClient(object):
         logger.debug(pprint_json(le))
 
         if le['timeline']['events'][0]['sender'] != le['timeline']['events'][0]['state_key']:
+            logger.info('sending kick event to bot from room: %s', room_id)
             self.tb.send_kick(self._room_id_to_alias(room_id), self)
 
     def on_invite_event(self, _, ie):
@@ -105,7 +109,6 @@ class MatrigramClient(object):
     def join_room(self, room_id_or_alias):
         try:
             self.client.join_room(room_id_or_alias)
-            self.set_focus_room(room_id_or_alias)
             return True
         except MatrixRequestError:
             return False
@@ -116,17 +119,10 @@ class MatrigramClient(object):
             logger.error('cant find room')
             return False
 
-        if self.focus_room_id == room.room_id:
-            rooms = self.get_rooms_aliases()
-            room_id = self._room_alias_to_id(room_id_or_alias)
-
-            del rooms[room_id]
-            new_focus_room = rooms.keys()[0] if rooms else None
-            self.set_focus_room(new_focus_room)
-
         return room.leave()
 
     def set_focus_room(self, room_id_or_alias):
+        logger.info('setting focus room to: %s', room_id_or_alias)
         if self._room_alias_to_id(room_id_or_alias) == self.focus_room_id:
             return
 
@@ -137,7 +133,7 @@ class MatrigramClient(object):
             self.room_listener_uid = None
             room_obj.remove_ephemeral_listener(self.ephemeral_listener_uid)
             self.ephemeral_listener_uid = None
-            logger.info("remove focus room %s", self.focus_room_id)
+            logger.info('remove focus room %s', self.focus_room_id)
             self.focus_room_id = None
 
         # set new room on focus
@@ -207,6 +203,23 @@ class MatrigramClient(object):
         room_id = self._room_alias_to_id(room_id_or_alias)
 
         return rooms.get(room_id)
+
+    def get_next_room(self, room_id_or_alias):
+        """Returns a joined room that is not 'room_id_or_alias' if one exists
+
+        Args:
+            room_id_or_alias (str): Room's id or alias.
+
+        Returns (str): Room's alias, None of none exists
+
+        """
+        rooms = self.get_rooms_aliases()
+        room_id = self._room_alias_to_id(room_id_or_alias)
+        if room_id is not None:
+            del rooms[room_id]
+        new_focus_room = rooms.keys()[0] if rooms else None
+        logger.info('next room is: %s', new_focus_room)
+        return self._room_id_to_alias(new_focus_room)
 
     def send_message(self, msg):
         room_obj = self.get_room_obj(self.focus_room_id)
